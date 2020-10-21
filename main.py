@@ -74,18 +74,20 @@ def display_status():
 
 def procedure_color():
     color = Color((255, 255, 255))
+    print(Color.list_colors())
 
 def procedure_string():
-    for i in range(0, 256):
-        print(f'\033[f{Color.chart(b = i)}')
-        time.sleep(0.001)
-    # string = String('test', 'fuchsia')
-    # print(string)
-
+    string = String('test', 'yellow', 'turquoise')
+    print(string)
 
 def procedure_livemenu():
-    LiveMenu.start()
-    LiveMenu.stop()
+    live_menu = LiveMenu()
+    live_menu_2 = LiveMenu()
+    live_menu.start()
+    live_menu.stop()
+
+    with live_menu:
+        pass
 
 """MAIN SCRIPT"""
 

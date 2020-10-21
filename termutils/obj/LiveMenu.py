@@ -1,8 +1,12 @@
-from typing import Tuple
+from typing import Tuple, Callable
+from atexit import register
 import threading
+import warnings
 import termios
 import tty
 import sys
+
+from termutils.config.defaults import term_height, term_width
 
 class LiveMenu:
 
@@ -11,37 +15,46 @@ class LiveMenu:
         simultaneously accepting user inputs.
     '''
 
-    _dims = (24, 79)
     _active = False
-    _fd = None
-    _old_settings = None
+    _fd = sys.stdin.fileno()
+    _old_settings = termios.tcgetattr(_fd)
+    _raw_mode = False
 
-    '''CONSTRUCTOR EXCEPTION'''
+    '''CONSTRUCTOR'''
 
-    def __init__(self):
+    def __init__(self, height:int = None, width:int = None) -> None:
         '''
-            LiveMenu cannot be instantiated – all methods are class methods or
-            static methods.
+            Creates a new, inactive instance of LiveMenu.  Arguments `height`
+            and `width` should be integers greater than zero.
         '''
-        msg = (
-            "\n\nInvalid attempt to create instance of <class 'LiveMenu'>.\n"
-            "All methods of this class are classmethod or staticmethod.\n"
-        )
-        raise RuntimeError(msg)
+        if height is None:
+            height = term_height
+
+        if width is None:
+            width = term_width
+
+        self._dims = (height, width)
+        self._current_active = False
 
     '''GETTERS'''
 
-    @classmethod
-    def dims(cls) -> Tuple[int]:
+    @property
+    def dims(self) -> Tuple[int]:
         '''
             Returns the terminal dimensions.
         '''
         return cls._dims
 
+    @property
+    def active(self) -> bool:
+        '''
+            Returns True if the current instance is active. False otherwise.
+        '''
+        return self._current_active
+
     '''SETTERS'''
 
-    @classmethod
-    def set_dims(cls, rows:int = None, cols:int = None) -> None:
+    def set_dims(self, rows:int = None, cols:int = None) -> None:
         '''
             Sets the terminal dimensions.
         '''
@@ -51,48 +64,85 @@ class LiveMenu:
             cols = cls._dims[1]
         cls._dims = (rows, cols)
 
+    def set_display(self, display:Callable) -> None:
+        '''
+            Setting this value with a callable will cause the terminal display
+            to print whatever is returned from `display`.  Callable should
+            accept whatever is returned from `input` callable, seen in method
+            `set_input`.
+        '''
+        self._display = display
+
+    def set_input(self, input:Callable) -> None:
+        '''
+            Setting this value with a callable will cause the terminal display
+            to include interactive actions.  Callable should allow for user
+            input, which is then returned and read by the `display` callable.
+        '''
+        self._input = input
+
     '''RUNTIME'''
 
-    @classmethod
-    def start(cls) -> None:
+    def start(self) -> None:
         '''
             Activates the LiveMenu session.
         '''
-        if cls._active:
+        if self.__class__._active:
+            self.__class__._raw(False)
             msg = (
-                'LiveMenu is already active, cannot run method `start` again.'
+                '\n\nLiveMenu is already active, cannot run method `start` on '
+                'multiple separate instances.  Call method `stop` on current '
+                'active instance before attempting to activate this one.\n'
             )
             raise RuntimeError(msg)
-        cls._active = True
-        cls._fd = sys.stdin.fileno()
-        cls._old_settings = termios.tcgetattr(cls._fd)
-        tty.setraw(sys.stdin.fileno())
+        self._current_active = True
+        self.__class__._active = True
+        self.__class__._raw(True)
 
-    @classmethod
-    def stop(cls) -> None:
+    def stop(self) -> None:
         '''
             Deactivates the LiveMenu session.
         '''
-        if not cls._active:
+        if not self.__class__._active:
+            switch = self.__class__._raw_mode
+            if switch:
+                self.__class__._raw(False)
             msg = (
-                'LiveMenu must be active before running method `stop`.'
+                '\n\nAttempted to stop an inactive LiveMenu.\n'
             )
-            raise RuntimeError(msg)
-        termios.tcsetattr(cls._fd, termios.TCSADRAIN, cls._old_settings)
-        cls._fd = None
-        cls._old_settings = None
-        cls._active = False
+            warnings.warn(msg)
+            if switch:
+                self.__class__._raw(True)
+        else:
+            self.__class__._raw(False)
+            self.__class__._active = False
+            self._current_active = False
 
-    @classmethod
-    def __enter__(cls) -> None:
+    def __enter__(self) -> None:
         '''
             Context manager wrapper for `start`.
         '''
-        cls.start()
+        self.start()
 
-    @classmethod
-    def __exit__(cls) -> None:
+    def __exit__(self, type, value, tb) -> None:
         '''
             Context manager wrapper for `stop`.
         '''
-        cls.stop()
+        self.stop()
+
+    '''PRIVATE METHODS'''
+
+    @classmethod
+    def _raw(cls, state:bool) -> None:
+        '''
+            Sets the terminal to raw mode if True, or to echo mode if False
+        '''
+        if state:
+            tty.setraw(sys.stdin.fileno())
+            cls._raw_mode = True
+        elif not state:
+            termios.tcsetattr(
+                cls._fd, termios.TCSADRAIN,
+                cls._old_settings
+            )
+            cls._raw_mode = False

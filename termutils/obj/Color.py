@@ -164,14 +164,12 @@ class Color:
         '''
         return int(self._rgb[2])
 
-    @property
     def brightness(self) -> int:
         '''
             Returns the mean of the RGB values.
         '''
         return int(np.mean(self._rgb))
 
-    @property
     def lightness(self, weighted:bool = True) -> float:
         '''
             Returns the norm of the RGB vector as fraction of 255.  Should
@@ -187,6 +185,32 @@ class Color:
         else:
             weights = np.ones(3, dtype = np.float64)
         return np.sum(weights*self._rgb.astype(np.float64)**2) / 65025
+
+    def hsv(self):
+        '''
+            Returns the current color in HSV form.
+        '''
+        rgb = self._rgb.astype(np.float64)/255
+        add = [360, 120, 240]
+
+        idx_max = np.argmax(rgb)
+        idx_min = np.argmin(rgb)
+        diff = np.max(rgb)-np.min(rgb)
+
+        if diff == 0:
+            h = 0
+        else:
+            h = (rgb[(idx_max+1)%3] - rgb[(idx_max+2)%3])/diff
+            h = (60*h + add[idx_max]) % 360
+
+        if np.max(rgb) == 0:
+            s = 0
+        else:
+            s = 100*diff/np.max(rgb)
+
+        v = 100*np.max(rgb)
+
+        return (h,s,v)
 
     '''SAMPLER METHODS'''
 
@@ -245,36 +269,69 @@ class Color:
         return out
 
     @classmethod
-    def list_colors(cls, sort_by = 'rgb') -> str:
+    def list_colors(cls, sort_by = 'step') -> str:
         '''
             Returns a list of all available colors and their names.
         '''
         out = '\nList of Available Colors\n\n'
         colors = [cls(j,i) for i,j in colors_dict.items()]
         rgb_str = '{:03d}{:03d}{:03d}'
-        if sort_by == 'rgb':
+        if sort_by.lower() == 'rgb':
+
             sorted_list = []
             rgb_vals = [int(rgb_str.format(*i._rgb)) for i in colors]
             idx = np.argsort(rgb_vals)
             for i in idx:
                 sorted_list.append(colors[i])
             colors = sorted_list
-        elif sort_by == 'light':
-            pass
-        elif sort_by not in ['alpha', 'rgb', 'light']:
+
+        elif sort_by.lower() == 'step':
+
+            repetitions = 8
+
+            sorted_list = []
+            weights = np.array([0.241, 0.691, 0.068], dtype = np.float64)
+            lum_vals = np.array([np.sqrt(np.sum(weights*i._rgb)) for i in colors])
+            hsv_vals = np.array([i.hsv() for i in colors])
+
+            h = (hsv_vals[:,0]*repetitions).astype(np.int64)[:,None]
+            lum = (lum_vals*repetitions).astype(np.int64)[:,None]
+            v = (hsv_vals[:,2]*repetitions).astype(np.int64)[:,None]
+
+            sort_keys = np.concatenate([h, lum, v], axis = 1)
+            sort_keys = np.lexsort(
+                (sort_keys[:,2], sort_keys[:,1], sort_keys[:,0]), axis = 0
+            )
+            for i in sort_keys:
+                sorted_list.append(colors[i])
+            colors = sorted_list
+
+        elif sort_by.lower() == 'light':
+
+            sorted_list = []
+            rgb_vals = [i.lightness for i in colors]
+            idx = np.argsort(rgb_vals)
+            for i in idx:
+                sorted_list.append(colors[i])
+            colors = sorted_list
+
+        elif sort_by.lower() != 'alpha':
+
             msg = (
                 f'Argument `sort_by` in method `Color.list_colors` must take '
-                f'the value `alpha` for alphabetical sorting (default), '
-                f'`rgb` for sorting by color, or `light` for sorting by '
-                f'color lightness.'
+                f'the value `step` for step sorting (default), `alpha` for '
+                f'alphabetical sorting, `rgb` for sorting by color, or `light` '
+                f'for sorting by color lightness.'
             )
             raise ValueError(msg)
+
         for color in colors:
             temp = (
                 f'{color.sample} {color._rgb[0]:03d} {color._rgb[1]:03d} '
                 f'{color._rgb[2]:03d} {color._name.title()}\n'
             )
             out += temp
+
         return out
 
     '''OPERATORS'''
