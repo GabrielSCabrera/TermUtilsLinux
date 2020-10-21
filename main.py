@@ -76,13 +76,12 @@ def procedure_color():
     color = Color((255, 255, 255))
 
 def procedure_string():
-    string = String('test', 'red', 'blue', 'bold')
-    print(string)
-    print(string[2])
-    print([i for i in string])
-    assert('e' in string)
-    assert('test' == string)
-    print(max(string))
+    for i in range(0, 256):
+        print(f'\033[f{Color.chart(b = i)}')
+        time.sleep(0.001)
+    # string = String('test', 'fuchsia')
+    # print(string)
+
 
 def procedure_livemenu():
     LiveMenu.start()

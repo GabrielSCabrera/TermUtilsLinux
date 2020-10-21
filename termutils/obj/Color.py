@@ -196,7 +196,7 @@ class Color:
             Returns a color sample in the form of a printable string.
         '''
         out = (
-            f'\033[48;2;{self._rgb[0]:d};{self._rgb[1]:d};{self._rgb[2]:d}m'
+            f'\033[48;2;{self._rgb[0]:d};{self._rgb[1]:d};{self._rgb[2]:d}m '
             f'\033[m'
         )
         return out
@@ -245,13 +245,30 @@ class Color:
         return out
 
     @classmethod
-    def list_colors(cls) -> str:
+    def list_colors(cls, sort_by = 'rgb') -> str:
         '''
             Returns a list of all available colors and their names.
         '''
         out = '\nList of Available Colors\n\n'
         colors = [cls(j,i) for i,j in colors_dict.items()]
-        colors = sorted(colors)
+        rgb_str = '{:03d}{:03d}{:03d}'
+        if sort_by == 'rgb':
+            sorted_list = []
+            rgb_vals = [int(rgb_str.format(*i._rgb)) for i in colors]
+            idx = np.argsort(rgb_vals)
+            for i in idx:
+                sorted_list.append(colors[i])
+            colors = sorted_list
+        elif sort_by == 'light':
+            pass
+        elif sort_by not in ['alpha', 'rgb', 'light']:
+            msg = (
+                f'Argument `sort_by` in method `Color.list_colors` must take '
+                f'the value `alpha` for alphabetical sorting (default), '
+                f'`rgb` for sorting by color, or `light` for sorting by '
+                f'color lightness.'
+            )
+            raise ValueError(msg)
         for color in colors:
             temp = (
                 f'{color.sample} {color._rgb[0]:03d} {color._rgb[1]:03d} '
