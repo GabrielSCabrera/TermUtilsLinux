@@ -9,8 +9,10 @@ import tty
 import sys
 import os
 
-from termutils.config.defaults import term_rows, term_cols
 from termutils.config.keys import keys as keys_dict
+from termutils.config.defaults import (
+    term_rows, term_cols, term_fd, term_settings
+)
 
 
 class LiveMenu:
@@ -21,8 +23,8 @@ class LiveMenu:
     '''
 
     _active = False
-    _fd = sys.stdin.fileno()
-    _old_settings = termios.tcgetattr(_fd)
+    _fd = term_fd#sys.stdin.fileno()
+    _old_settings = term_settings#termios.tcgetattr(_fd)
     _raw_mode = False
     _input_state = []       # History of all keys pressed
 
