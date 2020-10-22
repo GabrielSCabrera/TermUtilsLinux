@@ -3,5 +3,5 @@ data_directory = '.livemenu'
 outputs_directory = 'LiveMenu'
 
 # Terminal Properties
-term_height = 24
-term_width = 79
+term_rows = 24
+term_cols = 79

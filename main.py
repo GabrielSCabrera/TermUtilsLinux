@@ -1,7 +1,9 @@
 import numpy as np
 import argparse
+import termios
 import time
 import sys
+import tty
 import os
 
 from termutils import *
@@ -82,12 +84,8 @@ def procedure_string():
 
 def procedure_livemenu():
     live_menu = LiveMenu()
-    live_menu_2 = LiveMenu()
     live_menu.start()
     live_menu.stop()
-
-    with live_menu:
-        pass
 
 """MAIN SCRIPT"""
 
@@ -97,7 +95,44 @@ if args.unit_tests is True:
     tests.run_all()
 
 if args.test is True:
-    print('No Tests Implemented')
+
+    import readline
+
+    print('\033[2J\033[f')
+
+    _fd = sys.stdin.fileno()
+    _old_settings = termios.tcgetattr(_fd)
+
+    tty.setraw(sys.stdin.fileno())
+
+    try:
+        escape_timeout = 2
+        escape_hold = False
+        while True:
+            key = os.read(1,20).decode()
+            if key in config.keys.keys.keys():
+                output = config.keys.keys[str(key)]
+            else:
+                output = key
+            if output == 'Esc':
+                t1 = time.perf_counter()
+                if not escape_hold:
+                    t0 = time.perf_counter()
+                    escape_hold = True
+                elif t1 - t0 >= escape_timeout:
+                    break
+            elif escape_hold and output != 'Esc':
+                escape_hold = False
+
+    except Exception as e:
+        print(e)
+
+    termios.tcsetattr(
+        _fd, termios.TCSADRAIN,
+        _old_settings
+    )
+
+    # print('\033[2J\033[f')
 
 if args.color is True:
     procedure_color()
