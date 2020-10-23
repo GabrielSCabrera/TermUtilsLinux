@@ -1,4 +1,5 @@
-from typing import Tuple, Callable, Union, Dict
+from typing import Tuple, Callable, Any, Union, Dict
+from string import punctuation, whitespace
 import threading
 import warnings
 import readline
@@ -16,18 +17,16 @@ from termutils.config.defaults import (
 class LiveMenu:
 
     '''
-        Superclass that allows the user to display live, changing text on the
-        terminal while simultaneously accepting user inputs.
-
-        Must be inherited before instantiation, and __call__ must be
-        overwritten.  The overwritten __call__ should contain the main loop
-        displayed to the terminal
+        Allows the user to display live, changing text on the terminal while
+        simultaneously accepting user inputs.
     '''
 
     _active = False
     _fd = term_fd                   # sys.stdin.fileno()
     _old_settings = term_settings   # termios.tcgetattr(_fd)
     _raw_mode = False
+    _input_state = []               # History of all keys pressed
+    _mouse_state = []               # History of all mouse actions
 
     '''CONSTRUCTOR'''
 
@@ -45,8 +44,7 @@ class LiveMenu:
         self._dims = (rows, cols)
         self._current_active = False
         self._listener = self._default_listener
-        self._key_history = []
-        self._btn_history = []
+        self._writer = self._default_writer
 
     '''GETTERS'''
 
@@ -55,21 +53,7 @@ class LiveMenu:
         '''
             Returns the terminal dimensions.
         '''
-        return self._dims
-
-    @property
-    def rows(self) -> int:
-        '''
-            Returns the display height (number of rows).
-        '''
-        return self._dims[0]
-
-    @property
-    def cols(self) -> int:
-        '''
-            Returns the display width (number of columns).
-        '''
-        return self._dims[1]
+        return cls._dims
 
     @property
     def active(self) -> bool:
@@ -78,14 +62,6 @@ class LiveMenu:
         '''
         return self._current_active
 
-    def __call__(self):
-        '''
-            Must be inherited before instantiation, and __call__ must be
-            overwritten.  The overwritten __call__ should contain the main loop
-            that prints to the terminal.
-        '''
-        raise NotImplementedError(self.__call__.__doc__)
-
     '''SETTERS'''
 
     def set_dims(self, rows:int = None, cols:int = None) -> None:
@@ -93,10 +69,17 @@ class LiveMenu:
             Sets the terminal dimensions.
         '''
         if rows is None:
-            rows = self._dims[0]
+            rows = cls._dims[0]
         if cols is None:
-            cols = self._dims[1]
-        self._dims = (rows, cols)
+            cols = cls._dims[1]
+        cls._dims = (rows, cols)
+
+    def set_writer(self, writer:Callable) -> None:
+        '''
+            Sets the callable that will write to the terminal, using the input
+            given by callable attribute `listener`
+        '''
+        self._writer = writer
 
     def set_listener(self, listener:Callable) -> None:
         '''
@@ -128,12 +111,11 @@ class LiveMenu:
         self.__class__._active = True
 
         t_listener = threading.Thread(target = self._listener)
-        t_writer = threading.Thread(target = self.__call__)
+        t_writer = threading.Thread(target = self._writer)
 
         self._raw(True)
 
         try:
-            print(f'\033[2J\033[3J\033[f', end = '', flush = True)
             t_listener.start()
             t_writer.start()
 
@@ -143,7 +125,6 @@ class LiveMenu:
             t_listener.join()
             t_writer.join()
         except Exception as e:
-            print(f'\033[2J\033[3J\033[f', end = '', flush = True)
             self._raw(False)
             raise Exception(e)
 
@@ -167,8 +148,6 @@ class LiveMenu:
             self.__class__._raw(False)
             self.__class__._active = False
             self._current_active = False
-
-        print(f'\033[2J\033[3J\033[f', end = '', flush = True)
 
     def __enter__(self) -> None:
         '''
@@ -199,7 +178,8 @@ class LiveMenu:
             )
             cls._raw_mode = False
 
-    def _default_listener(self, escape_hits:int = 15) -> str:
+    @classmethod
+    def _default_listener(cls, escape_hits:int = 3) -> str:
         '''
             An input source for the `writer` callable, as seen in method
             `set_writer.`  Updates the global variable `input_state` by
@@ -212,24 +192,102 @@ class LiveMenu:
         try:
             print('\033[?1002h', end = '', flush = True)
             while True:
-                output = self._get_input()
+                output = cls._get_input()
                 if output == 'Esc':
                     if escape_hitcount < escape_hits - 1:
                         escape_hitcount += 1
                         continue
                     else:
-                        self._key_history.append('Kill')
+                        cls._input_state.append('Kill')
                         break
                 elif escape_hitcount > 0 and output != 'Esc':
                     escape_hitcount = 0
                 if isinstance(output, str):
-                    self._key_history.append(output)
-                elif isinstance(output, dict):
-                    self._btn_history.append(output)
+                    cls._input_state.append(output)
+                elif isinstance(output, dict) and len(output) > 0:
+                    cls._mouse_state.append(output)
         except Exception as e:
             print('\033[?1002l', end = '', flush = True)
             raise Exception(e)
         print('\033[?1002l', end = '', flush = True)
+
+    @classmethod
+    def _default_writer(cls, dt:float = 0.01, tab_len:int = 4):
+        '''
+            Default writer – acts as a simple text-editor.
+        '''
+        active = True
+        idx_input = 0
+        idx_mouse = 0
+        idx_cursor = 0
+        str_out = ''
+        print(f'\033[2J\033[3J\033[f', end = '', flush = True)
+        delims = list(punctuation + whitespace)
+        mouse_state = {}
+        while active:
+            c1 = len(cls._input_state) > idx_input
+            c2 = len(cls._mouse_state) > idx_mouse
+            if c1 or c2:
+                out = '\033[2J\033[3J\033[f'
+                idx_mouse = len(cls._mouse_state)
+                if cls._mouse_state:
+                    mouse_state = cls._mouse_state[-1]
+                    mouse_str = (
+                        f"{mouse_state['action']} at row {mouse_state['y']} "
+                        f"col {mouse_state['x']}"
+                    )
+                    out += f'\r{mouse_str}'
+                while len(cls._input_state) > idx_input:
+
+                    step = cls._input_state[idx_input]
+
+                    if len(step) == 1:
+                        str_out += step
+
+                    elif step == 'Backspace' and len(str_out) > 0:
+                        str_out = str_out.rstrip('\r')
+                        str_out = str_out[:-1]
+
+                    elif step == 'Ctrl-Backspace':
+                        str_out = str_out.rstrip('\r _')
+                        n = 0
+                        while len(str_out) > 0:
+                            c1 = len(str_out) == 0
+                            c2 = str_out[-1] in delims and n > 0
+                            if c1 or (c2):
+                                break
+                            str_out = str_out[:-1]
+                            n += 1
+
+                    elif step == 'Space':
+                        str_out += ' '
+
+                    elif step == 'Enter':
+                        str_out += '\n\r'
+
+                    elif step == 'Tab':
+                        str_out += ' '*tab_len
+
+                    elif step == 'Kill':
+                        active = False
+                        break
+
+                    idx_input += 1
+
+                if len(str_out) == 0:
+                    row = 1
+                    col = 0
+                else:
+                    split_lines = str_out.split('\n')
+                    row = len(split_lines)+1
+                    col = len(split_lines[-1])+1
+                    if row == 1:
+                        col += 1
+                out += f'\n\r{str_out}\033[{row};{col}f'
+                print(out, end = '', flush = True)
+
+            time.sleep(dt)
+        print(f'\033[2J\033[3J\033[f', end = '', flush = True)
 
     @classmethod
     def _get_input(cls) -> Union[str,Dict[str,Union[str,int]]]:
@@ -259,10 +317,10 @@ class LiveMenu:
             action.  If invalid, returns an empyty Dict.
         '''
         if len(output) != 6:
-            return None
+            return dict()
         btn_key = ord(output[3])
         if btn_key not in mouse_btns:
-            return None
+            return dict()
         else:
             dict_out = {
                 'action'    : mouse_btns[ord(output[3])],

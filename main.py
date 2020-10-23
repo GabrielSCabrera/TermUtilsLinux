@@ -24,6 +24,9 @@ def parse_args():
     help_livemenu = (
         'A sample of class LiveMenu presenting a few of its uses.'
     )
+    help_texteditor = (
+        'A text editor with basic functionality.'
+    )
 
     parser = argparse.ArgumentParser(description = argparse_desc)
 
@@ -41,6 +44,9 @@ def parse_args():
     )
     parser.add_argument(
         '--livemenu', action='store_true', help = help_livemenu
+    )
+    parser.add_argument(
+        '--texteditor', action='store_true', help = help_texteditor
     )
 
     return parser.parse_args()
@@ -87,6 +93,11 @@ def procedure_livemenu():
     live_menu.start()
     live_menu.stop()
 
+def procedure_texteditor():
+    text_editor = TextEditor()
+    text_editor.start()
+    text_editor.stop()
+
 """MAIN SCRIPT"""
 
 args = parse_args()
@@ -97,6 +108,10 @@ if args.unit_tests is True:
 if args.test is True:
 
     import readline
+    import subprocess
+    import re
+    from termutils.config.keys import mouse_btns
+    from typing import Union, Dict
 
     print('\033[2J\033[f')
 
@@ -105,24 +120,34 @@ if args.test is True:
 
     tty.setraw(sys.stdin.fileno())
 
+    def _process_click(output) -> Dict[str, Union[str,int]]:
+        '''
+            Given a terminal output string from a mouse click operation, returns
+            a dict containing information about the location and nature of the
+            action.  If invalid, returns an empyty Dict.
+        '''
+        output = output.decode()
+        if len(output) != 6:
+            return dict()
+        btn_key = ord(output[3])
+        if btn_key not in mouse_btns:
+            return dict()
+        else:
+            dict_out = {
+                'action'    : mouse_btns[ord(output[3])],
+                'y'         : ord(output[4])-33,
+                'x'         : ord(output[5])-33,
+            }
+        return dict_out
+
     try:
-        escape_timeout = 2
-        escape_hold = False
-        while True:
-            key = os.read(1,20).decode()
-            if key in config.keys.keys.keys():
-                output = config.keys.keys[str(key)]
-            else:
-                output = key
-            if output == 'Esc':
-                t1 = time.perf_counter()
-                if not escape_hold:
-                    t0 = time.perf_counter()
-                    escape_hold = True
-                elif t1 - t0 >= escape_timeout:
-                    break
-            elif escape_hold and output != 'Esc':
-                escape_hold = False
+        for i in range(10):
+            print('\033[?1002h', flush = True)
+            a = os.read(1,5)
+            print('\033[?1002l', flush = True)
+            time.sleep(0.05)
+            print(_process_click(a), flush = True)
+        time.sleep(0.1)
 
     except Exception as e:
         print(e)
@@ -142,3 +167,6 @@ if args.string is True:
 
 if args.livemenu is True:
     procedure_livemenu()
+
+if args.texteditor is True:
+    procedure_texteditor()

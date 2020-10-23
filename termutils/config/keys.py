@@ -166,3 +166,15 @@ keys = {
     '\x1b9'         :'Alt-9',
     ' '	            :'Space',
  }
+
+mouse_btns = {
+    32  :   'LeftClick',
+    33  :   'MiddleClick',
+    34  :   'RightClick',
+    64  :   'LeftDrag',
+    65  :   'MiddleDrag',
+    66  :   'RightDrag',
+    96  :   'ScrollUp',
+    97  :   'ScrollDown',
+    35  :   'MouseUp',
+}
