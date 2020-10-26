@@ -39,6 +39,7 @@ class TextEditor(LiveMenu):
         active = True
         key_idx = 0
         btn_idx = 0
+
         row = 0
         col = 0
 
@@ -116,109 +117,125 @@ class TextEditor(LiveMenu):
 
         print('\033[1 q', end = '', flush = True)
 
+    def _sub_col(self, row, col, text):
+        '''
+            Returns the coordinate that is one less than the given row & column
+            pair.  If at the origin, returns (None, None).
+        '''
+        if col > 0:
+            col -= 1
+        elif row > 0:
+            row -= 1
+            col = len(text[row]) - 1
+            if not text[row]:
+                row = None
+                col = None
+        else:
+            row = None
+            col = None
+        return row, col
+
+    def _add_col(self, row, col, text):
+        '''
+            Returns the coordinate that is one more than the given row & column
+            pair.  If at (row_max, col_max), returns (None, None).
+        '''
+        if col < len(text[row]) - 1:
+            col += 1
+        elif row < len(text) - 1:
+            row += 1
+            col = 0
+            if not text[row]:
+                row = None
+                col = None
+        else:
+            row = None
+            col = None
+        return row, col
+
     def _left_group(self, text, row, col) -> int:
         '''
             Returns the number of elements to the left of the current element
             which consist of a group (such as a word, or a word and a space).
         '''
-        spaces = True
-        delim_mode = False
         N = 0
-        if col < 1:
-            if row > 0:
-                N += 1
-                row -= 1
-                col = max(0, len(text[row]) - 1)
-            else:
-                return N
-        else:
-            col = max(0, col - 1)
-
-        if not text[row]:
+        start_mode = 0      # 0 is normal char, 1 is delimiter, 2 is space.
+        start_col = col
+        row, col = self._sub_col(row, col, text)
+        if row is None:
             return N
-
-        while True:
-            letter = text[row][col]
-            if spaces:
-                if letter in self._delimiters:
-                    delim_mode = True
-                    spaces = False
-                elif letter != ' ':
-                    spaces = False
-                elif col == 0:
-                    N += 1
-                    break
-            elif delim_mode:
-                if letter not in self._delimiters:
-                    break
-            else:
-                if letter in self._delimiters or letter == ' ':
-                    break
-
-            if col > 0:
-                col -= 1
-            elif row > 0:
-                row -= 1
-                N += 1
-                col = max(0, len(text[row])-1)
-            else:
-                N += 1
-                break
-
+        char = text[row][col]
+        if start_col == 0:
             N += 1
 
-        return N
+        if char in self._delimiters:
+            start_mode = 1
+        elif char == ' ':
+            start_mode = 2
+        N += 1
+
+        while True:
+            row, col = self._sub_col(row, col, text)
+            if row is None:
+                return N
+
+            char = text[row][col]
+            if start_mode == 2:
+                if char in self._delimiters:
+                    start_mode = 1
+                elif char != ' ':
+                    start_mode = 0
+            elif start_mode == 1:
+                if char not in self._delimiters:
+                    return N
+            else:
+                if char in self._delimiters or char == ' ':
+                    return N
+            N += 1
 
     def _right_group(self, text, row, col) -> int:
         '''
             Returns the number of elements to the left of the current element
             which consist of a group (such as a word, or a word and a space).
         '''
-        spaces = True
-        delim_mode = False
         N = 0
-        if col >= len(text[row]) - 1:
-            if row < len(text) - 1:
-                N += 2
-                row += 1
-                col = 0
-            else:
-                return N
+        start_mode = 0      # 0 is normal char, 1 is delimiter, 2 is space.
+        char = text[row][col]
 
-        if not text[row]:
-            return N
-
-        while True:
-            letter = text[row][col]
-            if spaces:
-                if letter in self._delimiters:
-                    delim_mode = True
-                    spaces = False
-                elif letter != ' ':
-                    spaces = False
-            elif delim_mode:
-                if letter not in self._delimiters:
-                    break
-            else:
-                if letter in self._delimiters or letter == ' ':
-                    N += 1
-                    break
-
-            if col < len(text[row]) - 1:
-                col += 1
-            else:
-                N += 1
-                break
+        if col == len(text[row]) - 1:
             N += 1
 
-        return N
+        if char in self._delimiters:
+            start_mode = 1
+        elif char == ' ':
+            start_mode = 2
+        N += 1
+
+        while True:
+            row, col = self._add_col(row, col, text)
+            if row is None:
+                return N
+
+            char = text[row][col]
+            if start_mode == 2:
+                if char in self._delimiters:
+                    start_mode = 1
+                elif char != ' ':
+                    start_mode = 0
+            elif start_mode == 1:
+                if char not in self._delimeters:
+                    return N
+            else:
+                if char in self._delimiters or char == ' ':
+                    return N
+            N += 1
 
     def _delete(self, text, row, col) -> Tuple[Union[str,int]]:
         '''
             Performs a delete on the given list of characters, using the
             context attached to them (see docstring in self._process_key).
         '''
-        if col < len(text[row]):
+        if col < len(text[row]) - 1:
             text[row].pop(col)
         elif row < len(text) - 1:
             new_row = text.pop(row+1)
@@ -267,14 +284,9 @@ class TextEditor(LiveMenu):
         '''
         N = self._left_group(text, row, col)
         for i in range(N):
-            if col < 1:
-                if row > 0:
-                    row -= 1
-                    col = len(text[row]) - 1
-                else:
-                    break
-            else:
-                col -= 1
+            new_row, new_col = self._sub_col(row, col, text)
+            if new_row is not None:
+                row, col = new_row, new_col
         return text, row, col
 
     def _ctrl_right(self, text, row, col) -> Tuple[Union[str,int]]:
@@ -284,14 +296,9 @@ class TextEditor(LiveMenu):
         '''
         N = self._right_group(text, row, col)
         for i in range(N):
-            if col >= len(text[row]) - 1:
-                if row < len(text) - 1:
-                    row += 1
-                    col = 0
-                else:
-                    break
-            else:
-                col += 1
+            new_row, new_col = self._add_col(row, col, text)
+            if new_row is not None:
+                row, col = new_row, new_col
         return text, row, col
 
     def _ctrl_up(self, text, row, col) -> Tuple[Union[str,int]]:
