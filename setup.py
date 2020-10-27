@@ -1,10 +1,10 @@
 from distutils.core import setup
 
 dependencies = (
-    # REQUIRED PACKAGES
+    'numpy'
 )
 
-packages = ['', 'numpy']
+packages = ['', 'config', 'obj', 'utils']
 for n, package in enumerate(packages):
     packages[n] = 'termutils' + package
 
