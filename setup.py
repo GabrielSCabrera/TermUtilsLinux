@@ -6,7 +6,7 @@ dependencies = (
 
 packages = ['', 'config', 'obj', 'utils']
 for n, package in enumerate(packages):
-    packages[n] = 'termutils' + package
+    packages[n] = 'termutils.' + package
 
 url = 'https://github.com/GabrielSCabrera'
 setup(
