@@ -4,18 +4,18 @@ dependencies = (
     # REQUIRED PACKAGES
 )
 
-packages = ['', '<MODULE 1 NAME>', '<MODULE 2 NAME>']
+packages = ['', 'numpy']
 for n, package in enumerate(packages):
-    packages[n] = '<PACKAGE IMPORT NAME>' + package
+    packages[n] = 'termutils' + package
 
-url = '<GITHUB HYPERLINK>'
+url = 'https://github.com/GabrielSCabrera'
 setup(
-    name = '<PACKAGE NAME>',
+    name = 'TermUtils',
     packages = packages,
     version = '0.0.1',
     description = '<PACKAGE DESCRIPTION>',
     author = '<NAME>',
-    author_email = <'EMAIL ADDRESS'>,
+    author_email = 'EMAIL ADDRESS',
     url = url,
     download_url = url + 'archive/v0.0.1.tar.gz',
     keywords = ['<KEYWORD 1>', '<KEYWORD 2>', '<KEYWORD 3>'],
