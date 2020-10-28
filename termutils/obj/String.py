@@ -155,6 +155,20 @@ class String(UserString):
         '''
         return self.__str__()
 
+    def __format__(self, spec:str):
+        '''
+            Formats the given string using the desired spec.
+        '''
+        out = (
+            # Foreground
+            f'\033[{self._style_str}{self._fore_str};{self._back_str}m'
+            # Main String
+            f'{self.data:{spec}}'
+            # Resetting to Default
+            f'\033[m'
+        )
+        return out
+
     '''OPERATORS'''
 
     def __add__(self, *args, **kwargs):

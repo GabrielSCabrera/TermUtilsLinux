@@ -266,7 +266,7 @@ class LiveMenu:
         else:
             dict_out = {
                 'action'    : mouse_btns[ord(output[3])],
-                'y'         : ord(output[4])-33,
-                'x'         : ord(output[5])-33,
+                'x'         : ord(output[4])-33,
+                'y'         : ord(output[5])-33,
             }
         return dict_out

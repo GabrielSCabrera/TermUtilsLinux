@@ -1,10 +1,10 @@
 from distutils.core import setup
 
 dependencies = (
-    'numpy'
+    'numpy', 'matplotlib'
 )
 
-packages = ['', 'config', 'obj', 'utils']
+packages = ['', 'apps', 'config', 'obj', 'utils']
 for n, package in enumerate(packages):
     packages[n] = 'termutils.' + package
 
@@ -13,18 +13,15 @@ setup(
     name = 'TermUtils',
     packages = packages,
     version = '0.0.1',
-    description = '<PACKAGE DESCRIPTION>',
-    author = '<NAME>',
-    author_email = 'EMAIL ADDRESS',
+    description = 'Utilities compatible with xterm-256color',
+    author = 'Gabriel S. Cabrera',
+    author_email = 'gabriel.sigurd.cabrera@gmail.com',
     url = url,
     download_url = url + 'archive/v0.0.1.tar.gz',
-    keywords = ['<KEYWORD 1>', '<KEYWORD 2>', '<KEYWORD 3>'],
+    keywords = ['terminal', 'xterm', 'gui'],
     install_requires = dependencies,
     classifiers = [
         'Development Status :: 3 - Alpha',
-        'Intended Audience :: <INTENDED AUDIENCE>',
-        'Intended Audience :: <INTENDED AUDIENCE>',
         'Programming Language :: Python :: 3.8'
-        'Programming Language :: Python :: 3.9'
     ],
 )

@@ -27,6 +27,9 @@ def parse_args():
     help_texteditor = (
         'A text editor with basic functionality.'
     )
+    help_liveplot = (
+        'To display matplotlib plots live, using the terminal for input.'
+    )
 
     parser = argparse.ArgumentParser(description = argparse_desc)
 
@@ -47,6 +50,9 @@ def parse_args():
     )
     parser.add_argument(
         '--texteditor', action='store_true', help = help_texteditor
+    )
+    parser.add_argument(
+        '--liveplot', action='store_true', help = help_liveplot
     )
 
     return parser.parse_args()
@@ -97,6 +103,11 @@ def procedure_texteditor():
     text_editor = TextEditor()
     text_editor.start()
     text_editor.stop()
+
+def procedure_liveplot():
+    live_plot = LivePlot()
+    live_plot.start()
+    live_plot.stop()
 
 """MAIN SCRIPT"""
 
@@ -170,3 +181,6 @@ if args.livemenu is True:
 
 if args.texteditor is True:
     procedure_texteditor()
+
+if args.liveplot is True:
+    procedure_liveplot()
