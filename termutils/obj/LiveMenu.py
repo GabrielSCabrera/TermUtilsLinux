@@ -45,6 +45,7 @@ class LiveMenu:
         self._dims = (rows, cols)
         self._current_active = False
         self._listener = self._default_listener
+        self._kill = False
         self._key_history = []
         self._btn_history = []
 
@@ -211,7 +212,7 @@ class LiveMenu:
         escape_hitcount = 0
         try:
             print('\033[?1002h', end = '', flush = True)
-            while True:
+            while not self._kill:
                 output = self._get_input()
                 if output == 'Esc':
                     if escape_hitcount < escape_hits - 1:

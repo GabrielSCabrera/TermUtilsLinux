@@ -209,6 +209,13 @@ class String(UserString):
         else:
             return self.__getitem__(self._iter_idx)
 
+    def __radd__(self, *args, **kwargs):
+        '''
+            Wrapper for `UserString` method `__radd__`.
+        '''
+        new_str = super().__add__(*args, **kwargs)
+        return self.__class__(new_str, self._fore, self._back, self._style)        
+
     '''WRAPPED CLASS str METHODS'''
 
     def capitalize(self, *args, **kwargs):
