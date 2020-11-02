@@ -1,1 +1,0 @@
-class MultiString(String)
