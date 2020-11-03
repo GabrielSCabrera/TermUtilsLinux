@@ -403,7 +403,7 @@ class TextEditor(LiveMenu):
             that.
         '''
         if btn['action'] in ['LeftClick', 'LeftDrag']:
-            row = min(btn['x'], len(text)-1)
-            col = min(btn['y'], len(text[row])-1)
+            row = min(btn['y'], len(text)-1)
+            col = min(btn['x'], len(text[row])-1)
 
         return text, row, col
