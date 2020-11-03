@@ -30,6 +30,10 @@ def parse_args():
     help_liveplot = (
         'To display matplotlib plots live, using the terminal for input.'
     )
+    help_mohrcircle = (
+        'Creates a user modifiable stress tensor with a self-updating Mohr '
+        'circle plot via matplotlib.'
+    )
 
     parser = argparse.ArgumentParser(description = argparse_desc)
 
@@ -53,6 +57,9 @@ def parse_args():
     )
     parser.add_argument(
         '--liveplot', action='store_true', help = help_liveplot
+    )
+    parser.add_argument(
+        '--mohrcircle', action='store_true', help = help_mohrcircle
     )
 
     return parser.parse_args()
@@ -108,6 +115,18 @@ def procedure_liveplot():
     live_plot = LivePlot()
     live_plot.start()
     live_plot.stop()
+
+def procedure_mohrcircle():
+    mohr_circle = MohrCircle()
+    stress = [
+        [20,  4, 3],
+        [ 4, 15, 9],
+        [ 3,  9, 7]
+    ]
+    mohr_circle._stress_tensor = np.array(stress, dtype = np.float64)
+    mohr_circle._update_principal_stresses()
+    mohr_circle.start()
+    mohr_circle.stop()
 
 """MAIN SCRIPT"""
 
@@ -184,3 +203,6 @@ if args.texteditor is True:
 
 if args.liveplot is True:
     procedure_liveplot()
+
+if args.mohrcircle is True:
+    procedure_mohrcircle()
