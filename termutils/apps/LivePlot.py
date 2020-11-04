@@ -9,7 +9,6 @@ import numpy as np
 from termutils.obj.LiveMenu import LiveMenu
 from termutils.obj.String import String
 
-sns.set_theme()
 
 class LivePlot(LiveMenu):
 
@@ -368,6 +367,8 @@ class LivePlot(LiveMenu):
         '''
             Activates the LiveMenu session.
         '''
+        sns.set_theme()
+
         if self.__class__._active:
             self.__class__._raw(False)
             msg = (

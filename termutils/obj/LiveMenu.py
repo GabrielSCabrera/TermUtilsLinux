@@ -31,7 +31,8 @@ class LiveMenu:
 
     '''CONSTRUCTOR'''
 
-    def __init__(self, rows:int = None, cols:int = None) -> None:
+    def __init__(
+    self, rows:int = None, cols:int = None, escape_hits:int = 15) -> None:
         '''
             Creates a new, inactive instance of LiveMenu.  Arguments `rows`
             and `cols` should be integers greater than zero.
@@ -41,6 +42,8 @@ class LiveMenu:
 
         if cols is None:
             cols = term_cols
+
+        self._escape_hits = escape_hits
 
         self._dims = (rows, cols)
         self._current_active = False
@@ -200,7 +203,7 @@ class LiveMenu:
             )
             cls._raw_mode = False
 
-    def _default_listener(self, escape_hits:int = 15) -> str:
+    def _default_listener(self) -> str:
         '''
             An input source for the `writer` callable, as seen in method
             `set_writer.`  Updates the global variable `input_state` by
@@ -215,7 +218,7 @@ class LiveMenu:
             while not self._kill:
                 output = self._get_input()
                 if output == 'Esc':
-                    if escape_hitcount < escape_hits - 1:
+                    if escape_hitcount < self._escape_hits - 1:
                         escape_hitcount += 1
                         continue
                     else:
