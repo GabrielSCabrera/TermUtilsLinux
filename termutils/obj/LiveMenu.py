@@ -3,6 +3,7 @@ import threading
 import warnings
 import readline
 import termios
+import shutil
 import time
 import tty
 import sys
@@ -37,11 +38,13 @@ class LiveMenu:
             Creates a new, inactive instance of LiveMenu.  Arguments `rows`
             and `cols` should be integers greater than zero.
         '''
+        default_dims = shutil.get_terminal_size((term_rows, term_cols))
+
         if rows is None:
-            rows = term_rows
+            rows = default_dims[1]
 
         if cols is None:
-            cols = term_cols
+            cols = default_dims[0]
 
         self._escape_hits = escape_hits
 

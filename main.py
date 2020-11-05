@@ -34,6 +34,9 @@ def parse_args():
         'Creates a user modifiable stress tensor with a self-updating Mohr '
         'circle plot via matplotlib.'
     )
+    help_springtoy = (
+        'Creates a spring toy that the user can drag around the terminal.'
+    )
 
     parser = argparse.ArgumentParser(description = argparse_desc)
 
@@ -60,6 +63,9 @@ def parse_args():
     )
     parser.add_argument(
         '--mohrcircle', action='store_true', help = help_mohrcircle
+    )
+    parser.add_argument(
+        '--springtoy', action='store_true', help = help_springtoy
     )
 
     return parser.parse_args()
@@ -127,6 +133,11 @@ def procedure_mohrcircle():
     mohr_circle._update_principal_stresses()
     mohr_circle.start()
     mohr_circle.stop()
+
+def procedure_springtoy():
+    spring_toy = SpringToy()
+    spring_toy.start()
+    spring_toy.stop()
 
 """MAIN SCRIPT"""
 
@@ -206,3 +217,6 @@ if args.liveplot is True:
 
 if args.mohrcircle is True:
     procedure_mohrcircle()
+
+if args.springtoy is True:
+    procedure_springtoy()

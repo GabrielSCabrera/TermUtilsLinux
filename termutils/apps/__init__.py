@@ -1,3 +1,4 @@
-from .TextEditor import TextEditor
-from .MohrCircle import MohrCircle
 from .LivePlot import LivePlot
+from .MohrCircle import MohrCircle
+from .SpringToy import SpringToy
+from .TextEditor import TextEditor

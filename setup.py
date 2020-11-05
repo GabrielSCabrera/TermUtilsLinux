@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 dependencies = (
-    'numpy', 'matplotlib', 'seaborn'
+    'numpy', 'matplotlib', 'seaborn', 'numba'
 )
 
 packages = ['', 'apps', 'config', 'obj', 'utils']
