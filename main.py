@@ -24,6 +24,9 @@ def parse_args():
     help_livemenu = (
         'A sample of class LiveMenu presenting a few of its uses.'
     )
+    help_smartmenu = (
+        'A sample of class SmartMenu presenting a few of its uses.'
+    )
     help_texteditor = (
         'A text editor with basic functionality.'
     )
@@ -54,6 +57,9 @@ def parse_args():
     )
     parser.add_argument(
         '--livemenu', action='store_true', help = help_livemenu
+    )
+    parser.add_argument(
+        '--smartmenu', action='store_true', help = help_smartmenu
     )
     parser.add_argument(
         '--texteditor', action='store_true', help = help_texteditor
@@ -111,6 +117,11 @@ def procedure_livemenu():
     live_menu = LiveMenu()
     live_menu.start()
     live_menu.stop()
+
+def procedure_smartmenu():
+
+    btn1 = Button(0, 0, 6, 3, 'Hey howareya doingu?', background = 'red')
+    print(btn1._text)
 
 def procedure_texteditor():
     text_editor = TextEditor()
@@ -208,6 +219,9 @@ if args.string is True:
 
 if args.livemenu is True:
     procedure_livemenu()
+
+if args.smartmenu is True:
+    procedure_smartmenu()
 
 if args.texteditor is True:
     procedure_texteditor()
