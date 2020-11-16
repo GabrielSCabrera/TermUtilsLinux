@@ -120,8 +120,11 @@ def procedure_livemenu():
 
 def procedure_smartmenu():
 
-    btn1 = Button(0, 0, 6, 3, 'Hey howareya doingu?', background = 'red')
-    print(btn1._text)
+    # btn1 = Button(0, 0, 6, 3, 'Hey how are ya doing?', background = 'red')
+    # print(btn1._text)
+
+    w1 = Widget(0, 0, 10, 3)
+    w1('Hey')
 
 def procedure_texteditor():
     text_editor = TextEditor()

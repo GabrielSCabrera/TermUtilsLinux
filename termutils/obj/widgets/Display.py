@@ -52,7 +52,7 @@ class Display:
             raise ValueError(msg)
 
         if background is None:
-            background = defaults.btn_background
+            background = defaults.background_color
         elif isinstance(background, str):
             background = Color.palette(background)
         elif isinstance(background, (tuple, list, np.ndarray)):
@@ -65,7 +65,7 @@ class Display:
             raise ValueError(msg)
 
         if foreground is None:
-            foreground = defaults.btn_foreground
+            foreground = defaults.foreground_color
         elif isinstance(foreground, str):
             foreground = Color.palette(foreground)
         elif isinstance(foreground, (tuple, list, np.ndarray)):

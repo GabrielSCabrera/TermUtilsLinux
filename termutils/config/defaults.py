@@ -13,7 +13,7 @@ term_settings = [1280, 5, 191, 35387, 15, 15, [
     b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00'
 ]]
 
-# Button Properties
-btn_background = 'navy blue'
-btn_foreground = 'ghost white'
-btn_style = 'bold'
+# Style Properties
+background_color = 'navy blue'
+foreground_color = 'ghost white'
+style = 'bold'
