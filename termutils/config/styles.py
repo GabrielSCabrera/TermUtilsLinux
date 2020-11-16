@@ -1,4 +1,5 @@
 styles = {
+    'default' : 0,
     'bold' : 1,
     'faint' : 2,
     'italic' : 3,

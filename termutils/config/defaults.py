@@ -16,4 +16,4 @@ term_settings = [1280, 5, 191, 35387, 15, 15, [
 # Style Properties
 background_color = 'navy blue'
 foreground_color = 'ghost white'
-style = 'bold'
+style = 'default'

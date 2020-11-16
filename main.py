@@ -123,8 +123,73 @@ def procedure_smartmenu():
     # btn1 = Button(0, 0, 6, 3, 'Hey how are ya doing?', background = 'red')
     # print(btn1._text)
 
-    w1 = Widget(0, 0, 10, 3)
-    w1('Hey')
+    w1 = Widget(10, 10, 15, 50, background = 'white', foreground = 'black')
+    text = (
+        "We're no strangers to love\n"
+        "You know the rules and so do I\n"
+        "A full commitment's what I'm thinking of\n"
+        "You wouldn't get this from any other guy\n"
+        "I just wanna tell you how I'm feeling\n"
+        "Gotta make you understand\n"
+        "Never gonna give you up\n"
+        "Never gonna let you down\n"
+        "Never gonna run around and desert you\n"
+        "Never gonna make you cry\n"
+        "Never gonna say goodbye\n"
+        "Never gonna tell a lie and hurt you\n"
+        "We've known each other for so long\n"
+        "Your heart's been aching but you're too shy to say it\n"
+        "Inside we both know what's been going on\n"
+        "We know the game and we're gonna play it\n"
+        "And if you ask me how I'm feeling\n"
+        "Don't tell me you're too blind to see\n"
+        "Never gonna give you up\n"
+        "Never gonna let you down\n"
+        "Never gonna run around and desert you\n"
+        "Never gonna make you cry\n"
+        "Never gonna say goodbye\n"
+        "Never gonna tell a lie and hurt you\n"
+        "Never gonna give you up\n"
+        "Never gonna let you down\n"
+        "Never gonna run around and desert you\n"
+        "Never gonna make you cry\n"
+        "Never gonna say goodbye\n"
+        "Never gonna tell a lie and hurt you\n"
+        "Never gonna give, never gonna give\n"
+        "(Give you up)\n"
+        "(Ooh) Never gonna give, never gonna give\n"
+        "(Give you up)\n"
+        "We've known each other for so long\n"
+        "Your heart's been aching but you're too shy to say it\n"
+        "Inside we both know what's been going on\n"
+        "We know the game and we're gonna play it\n"
+        "I just wanna tell you how I'm feeling\n"
+        "Gotta make you understand\n"
+        "Never gonna give you up\n"
+        "Never gonna let you down\n"
+        "Never gonna run around and desert you\n"
+        "Never gonna make you cry\n"
+        "Never gonna say goodbye\n"
+        "Never gonna tell a lie and hurt you\n"
+        "Never gonna give you up\n"
+        "Never gonna let you down\n"
+        "Never gonna run around and desert you\n"
+        "Never gonna make you cry\n"
+        "Never gonna say goodbye\n"
+        "Never gonna tell a lie and hurt you\n"
+        "Never gonna give you up\n"
+        "Never gonna let you down\n"
+        "Never gonna run around and desert you\n"
+        "Never gonna make you cry"
+    )
+
+    w1(text)
+    from time import sleep
+    for i in range(20):
+        w1.write(ellipsis = True)
+        w1.scroll_down()
+        sleep(0.1)
+
 
 def procedure_texteditor():
     text_editor = TextEditor()
