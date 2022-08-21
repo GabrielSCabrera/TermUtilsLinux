@@ -1,4 +1,4 @@
-# TermUtils
+# TermUtils (Linux)
 
 Utilities compatible with xterm-256color
 
